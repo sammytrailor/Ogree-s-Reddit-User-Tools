@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ogree's Eve Tools</title>
+    <!-- CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+    <script src="http://code.highcharts.com/highcharts.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+
+
+    <script src="/js/app.js"></script>
+
+</head>
+<body>
+
+<div class="container">
+
+    <nav class="navbar navbar-inverse">
+        <div class='container-fluid'>
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                        aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">Ogree's Reddit User Tools</a>
+            </div>
+
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="#">Home</a></li>
+                    <li><a href="http://auth.pleaseignore.com/hr/application/admin">HR Queue</a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="#Help" aria-label="Help" data-toggle="modal" data-target="#helpModal">Help</a></li>
+                    <li><a href="#Contact" aria-label="Help" data-toggle="modal" data-target="#contactModal">Contact
+                        Ogree</a></li>
+                </ul>
+            </div><!--/.nav-collapse -->
+
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+
+    <div class="container">
+        <div class="alert alert-danger" style="display:none" role="alert" id="errorMessage"></div>
+
+        <!-- Search Dialog -->
+        <div class="container searchForm">
+            <form class="form-inline" onsubmit="return false;">
+                <div class="form-group">
+
+                    <!-- label for="txtUsername">Username</label -->
+                    <input type="text" class="form-control" id="txtUsername" placeholder="">
+                </div>
+                <button type="button" class="btn btn-primary" id="btnLookup">Lookup</button>
+                <button type="button" class="btn btn-info" id="btnForceLookup">Force Lookup</button>
+                <button type="button" class="btn btn-default" aria-label="Help" data-toggle="modal"
+                        data-target="#helpModal" id="btnHelp">
+                    <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+                </button>
+            </form>
+
+        </div>
+        <!-- User details -->
+        <div id="results">
+
+            <div id="userDetails">
+                <h1><span id="redditUsername"></span>
+                    <small> (&nbsp;<span id="headerSubmissionKarma"></span> / <span
+                            id="headerCommentKarma"></span>&nbsp;)
+                    </small>
+                </h1>
+                    <em><span id="cache_stats"></span></em><span> <a href="#" id="redditUserPage" target="_new">User
+                        page</a></span>
+                <div class="container-fluid" id="trophy_cabinet"></div>
+                <ul class="list-unstyled">
+                    <li>
+                        <h4>
+                            <span class="label label-success" id="IsGold">Reddit Gold</span>
+                            <span class="label label-info" id="IsMod">Moderator</span>
+                            <span class="label label-danger" id="IsSuspended">User Suspended!</span>
+                            <span class="label label-warning" id="IsEmployee">Reddit Employee</span>
+                        </h4>
+                    </li>
+                    <li style="display: inline-block">Created: <span id="accountCreationDate"></span>&nbsp;
+                        <span class="label" id="creationDateOK"></span></li>
+                    <li>Submissions: <span id="totalSubmissions"></span></li>
+                    <li>Comments: <span id="totalComments"></span></li>
+                    <li>Karma: <span id="detailSubmissionKarma"></span>&nbsp;/&nbsp;<span
+                            id="detailCommentKarma"></span></li>
+                    <li>First EVE related post: <span id="firstEvePost"></span></li>
+
+                </ul>
+
+            </div>
+
+            <div id="charts">
+                <div id="monthChart" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+            </div>
+
+            <div id="submissionBreakdown">
+                <table class="table table-bordered table-hover table-striped" id="month_breakdown">
+                    <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Submissions</th>
+                        <th>Comments</th>
+                        <th>Breakdown</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+{#                    <tr>#}
+{#                        <td>MONTH</td>#}
+{#                        <td><b>TOTAL_SUBMISSIONTS</b>(SUBMISSIONS_KARMA)</td>#}
+{#                        <td><b>TOTAL_COMMENTS</b> (COMMENT_KARMA)</td>#}
+{#                        <td>#}
+{#                            <ul>#}
+{#                                <li>SUBREDDIT Links/comments</li>#}
+{#                                <li>SUBREDDIT Links/comments</li>#}
+{#                                <li>SUBREDDIT Links/comments</li>#}
+{#                                <li>SUBREDDIT Links/comments</li>#}
+{#                                <li>SUBREDDIT Links/comments</li>#}
+{#                                <li>SUBREDDIT Links/comments</li>#}
+{#                            </ul>#}
+{#                        </td>#}
+{#                    </tr>#}
+
+
+                    </tbody>
+
+                </table>
+            </div>
+            <a name="eveContent"></a>
+            <div id="commentBreakdown">
+                <h3>Comments of note</h3>
+
+                <!-- one comment -->
+{#                <div>#}
+{#                    <p class="commentParent">#}
+{#                        <a href="URL" class="">TITLE</a> by <a href="https://www.reddit.com/user/AUTHOR"#}
+{#                                                               class="">AUTHOR</a> in <a#}
+{#                            href="https://www.reddit.com/r/SUBREDDIT/" class="">SUBREDDIT</a>#}
+{#                    </p>#}
+{##}
+{#                    <div class="entry unvoted lcTagged">#}
+{#                        <p class="">#}
+{#                            <span class="score dislikes">13 points</span>#}
+{#                            <time title="Sun Apr 12 03:14:33 2015 UTC" datetime="2015-04-12T03:14:33+00:00" class="">1#}
+{#                                day ago#}
+{#                            </time>#}
+{#                        </p>#}
+{##}
+{#                        <div class="">#}
+{#                            <div class=""><p>BODY/SELF TEXT</p></div>#}
+{#                        </div>#}
+{##}
+{#                        <ul class="list-unstyled list-inline">#}
+{#                            <li><a href="https://www.reddit.com/r/Eve/comments/32ap4y/test_nyx_please_ignore/cq9gi8m">permalink</a>#}
+{#                            </li>#}
+{#                            <li>#}
+{#                                <a href="https://www.reddit.com/r/Eve/comments/32ap4y/test_nyx_please_ignore/cq9gi8m?context=3">context</a>#}
+{#                            </li>#}
+{#                            <li><a href="https://www.reddit.com/r/Eve/comments/32ap4y/test_nyx_please_ignore/">full#}
+{#                                comments (54)</a></li>#}
+{##}
+{#                        </ul>#}
+{#                    </div>#}
+{#                </div>#}
+
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Windows -->
+
+<!-- "Help" Modal -->
+<div class="modal fade" id="helpModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">How to use this tool</h4>
+            </div>
+            <div class="modal-body">
+                <p>This tool grabs all the redditors comments, combines them, looks for eve content and presents it in a (hopefully) usable format</p>
+                <ul>
+                    <li>Put username in big box</li>
+                    <li>Press Lookup button to process their reddit history. The Reddit API limits the amount of "things" you can bring back to 1000. I'm working on a way to fix this</li>
+                    <li>This tool caches data for a while so it loads fast enough. The Force Lookup button will allow
+                        you to get the data directly from reddit and bypass the cache. Using this will take longer but will result in the most up-to-date content.
+                    </li>
+                </ul>
+
+                <p>I'm still updating/developing this application and there are a few things I know are a little broken. Particularly:</p>
+                <ul>
+                    <li>Limit to 1000 things to bring back inttotal</li>
+                    <li>Eve-related content need a bit better formatting</li>
+                    <li>Eve related content is not sorted</li>
+                    <li>Eve text is not HTML-formatted</li>
+                    <li>Eve related content has no link to comments</li>
+                    <li>Karma doesn't match user page on some examples (could be API obfuscating the number or because of the 1000 thing limit</li>
+                    <li>General formatting issues</li>
+                    <li>I'd also like to add some more charts:
+                        <ul><li>Breakdown of submissions per subreddit</li><li>karma per subreddit</li><li>Karma over time</li></ul>
+                    </li>
+                </ul>
+                <p>Please let me know if you encounter any errors or have ideas (click "Contact Ogree")</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- "Contact Ogree" Modal -->
+<div class="modal fade" id="contactModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Contact Ogree</h4>
+            </div>
+            <div class="modal-body">
+                <p>If you have problems with this tool or have suggestions, please contact Ogree/Sammytrailor/Sam the
+                    methods below. I'll do my best to get back to you.</p>
+                <ul>
+                    <li><a href="http://reddit.com/user/sammytrailor">/u/sammytrailor</a></li>
+                    <li>Steam: Sammytrailor</li>
+                    <li>Gmail: sammytrailor</li>
+                    <li>Grab me in Jabber</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Modal -->
+<div class="modal fade" id="loadingModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">Loading</h4>
+            </div>
+            <div class="modal-body">
+                <div><img src="http://reddit.nossquad.com/img/hourglass.gif" class="center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- JS -->
+
+{% if username %}
+    <script>
+        $(document).ready(function () {
+            $("#txtUsername").val("{{ username }}");
+            {% if force %}
+                btnForceLookup_Click();
+            {% else %}
+                btnLookup_Click();
+            {% endif %}
+
+        });
+    </script>
+
+{% endif %}
+
+{% if error %}
+
+    <script>
+        $(document).ready(function () {
+
+            $("#results").hide();
+
+            $("#errorMessage").html({{ error }});
+
+            $("#errorMessage").show(200);
+
+
+        });
+    </script>
+
+{% endif %}
+
+</body>
+</html>
+
