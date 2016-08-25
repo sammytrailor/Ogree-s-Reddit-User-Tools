@@ -1,8 +1,12 @@
+//UPDATE WITH URL (maybe make configurable later on
+var server_url = "http://127.0.0.1:8080";
+
 var month_submission_totals = [];
 var month_comment_totals = [];
 var month_combined_totals = [];
 var month_labels = [];
 var threshold_data = [];
+
 
 
 $(function () {
@@ -29,7 +33,7 @@ $(function () {
 });
 
 
-// PAGE-LEVEL EVENT HANDLERS
+// PAGE-LEVEL EVENT HANDLERS ########################################
 function btnLookup_Click() {
     //
     //set initial view
@@ -48,7 +52,7 @@ function btnForceLookup_Click() {
 }
 
 
-//
+//  PROCESS USER DATA ##############################################
 function QueryUser(force, username) {
 
     //setup view
@@ -67,7 +71,7 @@ function QueryUser(force, username) {
     $("#loadingModal").modal({backdrop: "static", keyboard: false})
 
 
-    var url = "http://127.0.0.1:8080";  // "http://reddit.nossquad.com";
+    var url = server_url;  // "http://reddit.nossquad.com";
     var userData;
 
     if (force) {
@@ -76,11 +80,6 @@ function QueryUser(force, username) {
     else {
         url = url + "/getuserdetails/" + username;
     }
-
-    // Add bogus Querystring to disable cloudflare caching
-    var d = new Date();
-
-    // url += "?cache=" + d.getTime();
 
 
     //Get User Details and display results
@@ -109,7 +108,6 @@ function ProcessUser(data) {
 
     }
 
-
     var userData = data.user_data;
 
     if (data.cached) {
@@ -128,7 +126,7 @@ function ProcessUser(data) {
 
     $("#results").show();
 
-    DisplayCharts();
+    DisplayCharts(userData);
 
     $("#loadingModal").modal('hide');
 
@@ -218,68 +216,11 @@ function DisplayTrophyDetails(data) {
 
 }
 
-function DisplayCharts() {
+function DisplayCharts(data) {
     DrawMonthChart();
-    DrawSubredditChart();
+    // DrawSubredditChart(data.subreddit_totals);
 }
 
-function DisplayBreakdown_all(data) {
-
-    var d = new Date();
-
-    var currentYear = d.getUTCFullYear();
-    var currentMonth = d.getUTCMonth();
-
-    // Each table
-    // console.log(data);
-
-
-    data = SortMonthData(data);
-
-    $.each(data, function (month, details) {
-
-        var $ul = "<ul>";
-
-        var subreddit_details = details.subreddits;
-
-        $.each(subreddit_details, function (subreddit, subreddit_data) {
-            //  console.log("SUB:" + subreddit);
-            //console.log("DATA:" + subreddit_data);
-
-            $ul += "<li>" + subreddit + " " + subreddit_data.totalSubmissions + " / " + subreddit_data.totalComments + "</li>";
-
-            // //update our stats
-            // if (subreddit_totals[subreddit] != undefined) {
-            //     var totalComments = subreddit_totals[subreddit][0];
-            //     var totalSubreddits = subreddit_totals[subreddit][1];
-            //     var commentKarma = subreddit_totals[subreddit][2];
-            //     var submissionKarma = subreddit_totals[subreddit][3];
-            // } else {
-            //     subreddit_totals[subreddit] = [subreddit_data.totalComments, subreddit_data.totalSubmissions, subreddit_totals[subreddit] = subreddit_data.commentKarma, subreddit_totals[subreddit] = subreddit_data.submissionKarma];
-            // }
-
-
-        });
-
-        $ul += "</ul>";
-
-        var $tr = "<tr>";
-
-        $tr += "<td>" + month + "</td>";
-        $tr += "<td><b>" + details.totalSubmissions + "</b>(" + details.totalSubmissionKarma + ")</td>";
-        $tr += "<td><b>" + details.totalComments + "</b>(" + details.totalCommentKarma + ")</td>";
-        $tr += "<td>" + $ul + "</td>";
-
-        month_labels.push(month);
-        month_comment_totals.push(details.totalComments);
-        month_submission_totals.push(details.totalSubmissions);
-        month_combined_totals.push(details.totalComments + details.totalSubmissions)
-
-
-        $("#month_breakdown tbody").append($tr);
-    });
-
-}
 
 function DisplayBreakdown(data) {
 
@@ -302,6 +243,7 @@ function DisplayBreakdown(data) {
     month_combined_totals = [];
     month_labels = [];
     threshold_data = [];
+
 
     $("#month_breakdown tbody").empty();
 
@@ -330,6 +272,8 @@ function DisplayBreakdown(data) {
             $.each(subreddit_details, function (subreddit, subreddit_data) {
                 if(subreddit_data != undefined) {
                     $ul += "<li>" + subreddit + " " + subreddit_data.totalSubmissions + " / " + subreddit_data.totalComments + "</li>";
+
+
                 }
             });
 
@@ -425,12 +369,135 @@ function DisplayError(errorMsg) {
 }
 
 
-function DrawSubredditChart() {
-    return;
+function DrawSubredditChart(subreddit_data) {
+    //Breakdown per subreddit
+
+    var maxSubredditsShown = 10;
+    //Sort our data appropriately
+    var submissionTotals = SortJSONByParam(subreddit_data,'totalThings',false);
+    var karmaTotals = SortJSONByParam(subreddit_data,'totalKarma',false);
+
+
+
+    var submissionLabels = [];
+    var submissionValues = [];
+
+    var submissionSeries = [];
+    var karmaSeries = [];
+
+    var karmaLabels = [];
+    var karmaValues = [];
+
+    var subredditsProcessed = 0;
+    var otherTotal = 0;
+    $.each(subreddit_data,function(subreddit,totals) {
+
+        console.log ("beep  beep");
+
+        if (subredditsProcessed >= maxSubredditsShown) {
+            //combine any excessive values into an "other"
+            otherTotal += totals.totalThings;
+
+        }
+        else {
+
+            submissionSeries.push(subreddit,totals);
+        }
+        subredditsProcessed += 1;
+    });
+
+    submissionLabels.push("Other");
+    submissionValues.push(otherTotal);
+
+   // console.log(submissionLabels);
+
+    subredditsProcessed = 0;
+    otherTotal = 0;
+    $.each(subreddit_data,function(subreddit,totals) {
+
+        if (subredditsProcessed >= maxSubredditsShown){
+            karmaLabels.push(subreddit);
+            karmaValues.push(totals.totalKarma);
+
+            subredditsProcessed += 1;
+
+        }
+
+    });
+
+    karmaLabels.push("Other");
+    karmaValues.push(otherTotal);
+
+
+
+
+     $('#submissionBreakdownChart').highcharts({
+         chart: {
+            plotBackgroundColor: null,
+            plotBorderWidth: null,
+            plotShadow: false,
+            type: 'pie'
+        },
+        title: {
+            text: 'Subreddit breakdown: Links + Comments'
+        },
+         credits: {
+            enabled: false
+        },plotOptions: {
+            pie: {
+                allowPointSelect: true,
+                cursor: 'pointer',
+                dataLabels: {
+                    enabled: true,
+                    format: '<b>{point.name}</b>: {point.y} %',
+                    style: {
+                        color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                    },
+                    connectorColor: 'silver'
+                }
+            }
+        },series: [{
+             name: 'Subreddits',
+             data: submissionValues,
+             dataLabels: submissionLabels
+        }]
+     });
+
+    $('#karmaBreakdownChart').highcharts({
+         chart: {
+            plotBackgroundColor: null,
+            plotBorderWidth: null,
+            plotShadow: false,
+            type: 'pie'
+        },
+        title: {
+            text: 'Total Karma Breakdown'
+        },
+         credits: {
+            enabled: false
+        },plotOptions: {
+            pie: {
+                allowPointSelect: true,
+                cursor: 'pointer',
+                dataLabels: {
+                    enabled: true,
+                    format: '<b>{point.name}</b>: {point.y} %',
+                    style: {
+                        color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                    },
+                    connectorColor: 'silver'
+                }
+            }
+        },series: [{
+             name: 'Subreddits',
+             data: karmaValues,
+             dataLabels: karmaLabels
+        }]
+     });
 }
 
 
-function DrawMonthChart() {
+function DrawMonthChart(data) {
 
     $('#monthChart').highcharts({
         chart: {
@@ -497,24 +564,11 @@ function DrawMonthChart() {
 
 }
 
-function SortMonthData(data) {
-    // return data.sort( function(a,b){
-    //     return a > b;
-    // } );
+function SortJSONByParam(unsorted,prop,asc) {
+    var sorted_data = $(unsorted).sort(function(a,b) {
+        if (asc) return (a[prop] > b[prop]) ? 1 : ((a[prop] < b[prop]) ? -1 : 0);
+        else return (b[prop] > a[prop]) ? 1 : ((b[prop] < a[prop]) ? -1 : 0);
+    });
+    return sorted_data;
 
-    return data;
-
-    // Because I'm retarded, I need to sort our content properly
-    //    data = data.sort( function(a,b) {
-    //        var a_d = new Date();
-    //        var b_d = new Date();
-    //
-    //        a_d.setUTCMonth(a.split("/")[0]);
-    //        a_d.setUTCFullYear(a.split("/")[1]);
-    //
-    //        b_d.setUTCMonth(b.split("/")[0]);
-    //        b_d.setUTCFullYear(b.split("/")[1]);
-    //
-    //        return a_d > b_d;
-    //    });
 }

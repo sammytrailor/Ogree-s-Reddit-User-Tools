@@ -211,6 +211,7 @@ def process_overview(overview_data, user_data):
     has_eve_content = False
 
     eve_content = {}
+    subreddit_totals = {}
 
     # reset our output overivew
     # TODO: WIll need to update this section if combining multiple reddit usernames
@@ -226,11 +227,10 @@ def process_overview(overview_data, user_data):
     else:
         eve_content = output['eve-content']
 
-
     for thing in overview_data:
 
         month = datetime.datetime.utcfromtimestamp(thing['data']['created_utc']).strftime("%m/%Y")
-
+        # TODO: Refactor this into something generic (thing,score,output)
         # Comment
         if thing['kind'] == 't1':
             output['totalComments'] += 1
@@ -251,6 +251,7 @@ def process_overview(overview_data, user_data):
 
             # update our subreddit stats for this month
             if thing['data']['subreddit'] not in output['details'][month]['subreddits'].keys():
+
                 output['details'][month]['subreddits'][thing['data']['subreddit']] = {
                     'totalSubmissions': 0,
                     'totalComments': 1,
@@ -259,8 +260,26 @@ def process_overview(overview_data, user_data):
                 }
             else:
                 output['details'][month]['subreddits'][thing['data']['subreddit']]['totalComments'] += 1
-                output['details'][month]['subreddits'][thing['data']['subreddit']]['totalCommentKarma'] += \
-                thing['data']['score']
+                output['details'][month]['subreddits'][thing['data']['subreddit']]['totalCommentKarma'] += thing['data']['score']
+
+            # update our subreddit totals for all time
+            if thing['data']['subreddit'] not in subreddit_totals.keys():
+                subreddit_totals[thing['data']['subreddit']] = {
+                    'totalSubmissions': 0,
+                    'totalComments': 1,
+                    'totalCommentKarma': thing['data']['score'],
+                    'totalSubmissionKarma': 0,
+                    'totalThings': 1,
+                    'totalKarma': thing['data']['score']
+                }
+
+            else:
+                subreddit_totals[thing['data']['subreddit']]['totalComments'] += 1
+                subreddit_totals[thing['data']['subreddit']]['totalCommentKarma'] += thing['data']['score']
+                subreddit_totals[thing['data']['subreddit']]['totalThings'] += 1
+                subreddit_totals[thing['data']['subreddit']]['totalKarma'] += thing['data']['score']
+
+
 
             if is_eve_subreddit(thing['data']['subreddit']) or contains_eve_content(thing['data']['body']):
                 has_eve_content = True
@@ -288,28 +307,47 @@ def process_overview(overview_data, user_data):
             # update our monthly stats
             if month not in output['details'].keys():
                 output['details'][month] = {
-                    'totalSubmissions': 0,
-                    'totalComments': 1,
-                    'totalCommentKarma': thing['data']['score'],
-                    'totalSubmissionKarma': 0,
-                    'subreddits': {}
-                }
-            else:
-                output['details'][month]['totalComments'] += 1
-                output['details'][month]['totalCommentKarma'] += thing['data']['score']
-
-            # update our subreddit stats for this month
-            if thing['data']['subreddit'] not in output['details'][month]['subreddits'].keys():
-                output['details'][month]['subreddits'] = {
                     'totalSubmissions': 1,
                     'totalComments': 0,
                     'totalCommentKarma': 0,
                     'totalSubmissionKarma': thing['data']['score'],
+                    'subreddits': {}
+                }
+            else:
+                output['details'][month]['totalSubmissions'] += 1
+                output['details'][month]['totalSubmissionKarma'] += thing['data']['score']
+
+            # update our subreddit stats for this month
+            if thing['data']['subreddit'] not in output['details'][month]['subreddits'].keys():
+
+                output['details'][month]['subreddits'][thing['data']['subreddit']] = {
+                    'totalSubmissions': 1,
+                    'totalComments': 0,
+                    'totalCommentKarma': 0,
+                    'totalSubmissionKarma': thing['data']['score'],
+
                 }
             else:
                 output['details'][month]['subreddits'][thing['data']['subreddit']]['totalSubmissions'] += 1
                 output['details'][month]['subreddits'][thing['data']['subreddit']]['totalSubmissionKarma'] += \
                     thing['data']['score']
+
+            # update our subreddit totals for all time
+            if thing['data']['subreddit'] not in subreddit_totals.keys():
+                subreddit_totals[thing['data']['subreddit']] = {
+                    'totalSubmissions': 1,
+                    'totalComments': 0,
+                    'totalCommentKarma': 0,
+                    'totalSubmissionKarma': thing['data']['score'],
+                    'totalThings': 1,
+                    'totalKarma': thing['data']['score']
+                }
+
+            else:
+                subreddit_totals[thing['data']['subreddit']]['totalSubmissions'] += 1
+                subreddit_totals[thing['data']['subreddit']]['totalSubmissionKarma'] += thing['data']['score']
+                subreddit_totals[thing['data']['subreddit']]['totalThings'] += 1
+                subreddit_totals[thing['data']['subreddit']]['totalKarma'] += thing['data']['score']
 
             if is_eve_subreddit(thing['data']['subreddit']) or contains_eve_content(thing['data']['selftext']):
                 has_eve_content = True
@@ -334,6 +372,8 @@ def process_overview(overview_data, user_data):
     output['firstEvePost'] = oldest_eve_content.strftime(app.config['DATE_FORMAT'])
 
     output['eve_content'] = eve_content
+    output['subreddit_totals'] = subreddit_totals
+
     return output
 
 
