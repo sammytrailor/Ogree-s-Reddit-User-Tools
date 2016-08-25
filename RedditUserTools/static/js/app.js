@@ -218,6 +218,7 @@ function DisplayTrophyDetails(data) {
 
 function DisplayCharts(data) {
     DrawMonthChart();
+    $("#piCharts").hide();
     // DrawSubredditChart(data.subreddit_totals);
 }
 
